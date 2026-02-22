@@ -1,6 +1,6 @@
-# News Credibility Checker
+# Intelligent News Credibility Analysis
 
-This project is an AI-driven content analysis system designed to assess the credibility of news articles using machine learning and textual features. 
+This project is an AI-driven content analysis system designed to assess the credibility of news articles( Fake / Real ) using machine learning and textual features. 
 
 ## Milestone 1 Overview
 
@@ -10,6 +10,8 @@ This milestone focuses on building the foundational Machine Learning pipeline an
 
 1. **Data Loading and Preprocessing**: 
    - The system loads a sample of the dataset (e.g., WELFake Dataset).
+
+   
    - Text is preprocessed to remove punctuation, convert to lowercase, and neutralize non-alphanumeric characters.
    
 2. **Feature Extraction**:
@@ -43,6 +45,7 @@ pip install -r requirements.txt
 ```
 
 ### 2. Prepare the Data
+Download the [WELFake Dataset](https://www.kaggle.com/datasets/saurabhshahane/fake-news-classification) from Kaggle.
 Ensure your dataset (`WELFake_Dataset.csv`) is placed in the `data/` directory.
 
 ### 3. Train the Model

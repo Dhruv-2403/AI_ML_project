@@ -1,0 +1,7 @@
+[build]
+publish = "src"
+
+[[redirects]]
+from = "/*"
+to = "/src/app.py"
+status = 301

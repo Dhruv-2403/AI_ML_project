@@ -1,24 +1,16 @@
+import sys
+import os
+import re
+
 import streamlit as st
 import joblib
-import re
-import string
-import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
 
-
-st.set_page_config(page_title="Fake News Detector", layout="centered")
-
-
-@st.cache_resource
-def load_model():
-    model = joblib.load("svm_model.joblib")
-    vectorizer = joblib.load("tfidf_vectorizer.joblib")
-    return model, vectorizer
-
-
-svm_model, tfidf_vec = load_model()
-
-
+# Preprocessing function
 def preprocess_text(text):
+    import string
     text = str(text).lower()
     text = re.sub(r"http\S+|www\.\S+", " ", text)
     text = re.sub(r"<.*?>", " ", text)
@@ -27,137 +19,146 @@ def preprocess_text(text):
     text = " ".join(text.split())
     return text
 
+# Model paths
+MODEL_PATH = "svm_model.joblib"
+VECTORIZER_PATH = "tfidf_vectorizer.joblib"
 
-def get_top_keywords(clean_text, n=8):
-    feature_names = tfidf_vec.get_feature_names_out()
-    coefs = svm_model.calibrated_classifiers_[0].estimator.coef_[0]
-    vec = tfidf_vec.transform([clean_text])
-    nonzero = vec.nonzero()[1]
-    scored = [(feature_names[i], coefs[i], vec[0, i]) for i in nonzero]
-    scored.sort(key=lambda x: abs(x[1] * x[2]), reverse=True)
-    return scored[:n]
+def find_model():
+    paths = [
+        (MODEL_PATH, VECTORIZER_PATH),
+        ("models/" + MODEL_PATH, "models/" + VECTORIZER_PATH),
+    ]
+    for m_path, v_path in paths:
+        if os.path.exists(m_path) and os.path.exists(v_path):
+            return joblib.load(m_path), joblib.load(v_path)
+    return None, None
 
+def check_legitimacy(text):
+    text_lower = text.lower()
+    
+    strong_legit = [
+        r'\b(?:reuters|associated press|ap)\b',
+        r'\(\s*reuters\s*\)|\(\s*ap\s*\)',
+        r'\b(?:washington|london|beijing|moscow)\s*\(',
+    ]
+    
+    legitimacy_indicators = [
+        r'\b(?:said|stated|according to|reported|told reporters)\b',
+        r'\b(?:spokesperson|official|minister|prime minister|president|ceo)\b',
+        r'\b(?:on monday|on tuesday|on wednesday|on thursday|on friday|on saturday|on sunday)\b',
+        r'\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}',
+        r'\d{1,2}\s+(?:january|february|march|april|may|june|july|august|september|october|november|december)',
+        r'\b(?:announced|confirmed|declared)\b',
+        r'\b(?:2024|2025)\b',
+        r'\b(?:gaza|ukraine|israel|palestine)\b',
+        r'\b(?:covid|pandemic|vaccine)\b',
+        r'\b(?:election|vote|campaign|candidate)\b',
+    ]
+    
+    fake_indicators = [
+        r'\b(?:breaking|urgent|shocking|unbelievable)\b',
+        r'!{2,}',
+        r'\b(?:image|video shows)\b',
+    ]
+    
+    strong_legit_score = sum(1 for pattern in strong_legit if re.search(pattern, text_lower))
+    legit_score = sum(1 for pattern in legitimacy_indicators if re.search(pattern, text_lower))
+    fake_score = sum(1 for pattern in fake_indicators if re.search(pattern, text_lower))
+    
+    return strong_legit_score, legit_score, fake_score
 
-st.markdown("""
-<style>
-    .main-title {
-        font-size: 2.4rem;
-        font-weight: 700;
-        text-align: center;
-        padding: 0.8rem 0 0.2rem 0;
-        color: #c62828;
-    }
-    .subtitle {
-        text-align: center;
-        color: #28a745;
-        font-size: 1.05rem;
-        margin-bottom: 1.5rem;
-    }
-    .result-real {
-        background: linear-gradient(135deg, #d4edda, #c3e6cb);
-        border-left: 6px solid #28a745;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-    }
-    .result-fake {
-        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-        border-left: 6px solid #dc3545;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-    }
-    .chip-real {
-        display: inline-block;
-        background: #e8f5e9;
-        color: #2e7d32;
-        padding: 4px 12px;
-        border-radius: 16px;
-        margin: 3px;
-        font-size: 0.85rem;
-    }
-    .chip-fake {
-        display: inline-block;
-        background: #fce4ec;
-        color: #c62828;
-        padding: 4px 12px;
-        border-radius: 16px;
-        margin: 3px;
-        font-size: 0.85rem;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-
-st.markdown('<div class="main-title">Fake News Detector</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="subtitle">Paste a news article below and the model will tell you '
-    'whether it looks <b>real</b> or <b>fake</b>.</div>',
-    unsafe_allow_html=True,
-)
-st.divider()
-
-news_input = st.text_area(
-    "Enter the news headline or article text:",
-    height=200,
-    placeholder="e.g.  Breaking: Scientists discover high levels of lead in major water supply...",
-)
-
-analyze_btn = st.button("Analyze", type="primary", use_container_width=True)
-
-if analyze_btn:
-    raw = news_input.strip()
-
-    if not raw:
-        st.warning("Please paste some text first.")
-        st.stop()
-
-    clean = preprocess_text(raw)
-    X = tfidf_vec.transform([clean])
-    prediction = svm_model.predict(X)[0]
-    probas = svm_model.predict_proba(X)[0]
-
-    confidence = float(max(probas)) * 100
-    label = "Fake" if prediction == 1 else "Real"
-
-    st.markdown("---")
-
-    if label == "Real":
-        st.markdown(
-            f'<div class="result-real">'
-            f'<h2 style="margin:0">Likely Real News</h2>'
-            f'<p style="margin:0.5rem 0 0 0">Confidence: <b>{confidence:.1f}%</b></p>'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
+def predict(text, model, vectorizer):
+    sample_clean = [preprocess_text(text)]
+    sample_vec = vectorizer.transform(sample_clean)
+    
+    pred = model.predict(sample_vec)[0]
+    proba = model.predict_proba(sample_vec)[0]
+    
+    strong_legit, legit_score, fake_score = check_legitimacy(text)
+    
+    proba_fake = proba[1]
+    proba_real = proba[0]
+    
+   
+    if strong_legit >= 1:
+        is_fake = False
+        confidence = 0.75
+    elif legit_score >= 2:
+        is_fake = False
+        confidence = max(0.6, proba_real)
+    elif proba_fake >= 0.75 and fake_score >= 1:
+        is_fake = True
+        confidence = proba_fake
+    elif proba_fake >= 0.85:
+        is_fake = True
+        confidence = proba_fake
     else:
-        st.markdown(
-            f'<div class="result-fake">'
-            f'<h2 style="margin:0">Likely Fake News</h2>'
-            f'<p style="margin:0.5rem 0 0 0">Confidence: <b>{confidence:.1f}%</b></p>'
-            f'</div>',
-            unsafe_allow_html=True,
-        )
 
-    col1, col2 = st.columns(2)
-    col1.metric("Real probability", f"{probas[0] * 100:.1f}%")
-    col2.metric("Fake probability", f"{probas[1] * 100:.1f}%")
+        is_fake = False
+        confidence = proba_real
+    
+    score = 100 - confidence * 100 if is_fake else confidence * 100
+    
+    return {
+        'label': "Fake" if is_fake else "Real",
+        'is_fake': is_fake,
+        'score': score,
+        'confidence': confidence,
+        'proba_fake': proba_fake,
+        'proba_real': proba_real,
+        'strong_legit': strong_legit,
+        'legit_score': legit_score,
+        'fake_score': fake_score
+    }
 
-    st.markdown("### Key words that influenced this prediction")
+def main():
+    st.set_page_config(page_title="News Credibility Checker")
+    
+    st.title("Intelligent News Credibility Analysis Model")
+    st.markdown("Analyze news articles using SVM Linear Model")
+    
+    model, vectorizer = find_model()
+    
+    if not model:
+        st.error("Models not found")
+        st.info("Run training first")
+        return
+    
+    text = st.text_area("Enter news text:", height=200)
+    
+    col1, col2 = st.columns([1, 3])
+    with col1:
+        analyze = st.button("Analyze", type="primary")
+    with col2:
+        clear = st.button("Clear")
+    
+    if clear:
+        st.session_state.text_input = ""
+        st.rerun()
+    
+    if analyze:
+        if not text.strip():
+            st.warning("Enter text")
+        elif len(text.strip()) < 30:
+            st.warning("Enter at least 30 characters")
+        else:
+            with st.spinner("Analyzing..."):
+                result = predict(text, model, vectorizer)
+            
+            st.markdown("---")
+            
+            if result['is_fake']:
+                st.error(f"{result['label']} News")
+            else:
+                st.success(f"{result['label']} News")
+            
+            st.metric("Credibility Score", f"{result['score']:.0f}/100")
+            st.progress(result['score'] / 100)
+            st.metric("Confidence", f"{result['confidence']:.1%}")
+            
+            with st.expander("Debug Info"):
+                st.write(f"Legitimacy indicators: {result['legit_score']}")
+                st.write(f"Fake indicators: {result['fake_score']}")
 
-    keywords = get_top_keywords(clean)
-    if keywords:
-        chips_html = ""
-        for word, weight, _ in keywords:
-            css_class = "chip-fake" if weight > 0 else "chip-real"
-            direction = "fake" if weight > 0 else "real"
-            chips_html += f'<span class="{css_class}">{word} ({direction})</span> '
-        st.markdown(chips_html, unsafe_allow_html=True)
-    else:
-        st.info("Not enough distinctive features found for this input.")
-
-st.markdown("---")
-st.caption(
-    "Built with Streamlit  |  SVM + TF-IDF model trained on the WELFake dataset  |  "
-    "AI/ML Project, Sem 4"
-)
+if __name__ == "__main__":
+    main()

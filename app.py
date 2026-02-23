@@ -8,7 +8,6 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
-# Preprocessing function
 def preprocess_text(text):
     import string
     text = str(text).lower()
@@ -19,7 +18,6 @@ def preprocess_text(text):
     text = " ".join(text.split())
     return text
 
-# Model paths
 MODEL_PATH = "svm_model.joblib"
 VECTORIZER_PATH = "tfidf_vectorizer.joblib"
 
@@ -160,5 +158,5 @@ def main():
                 st.write(f"Legitimacy indicators: {result['legit_score']}")
                 st.write(f"Fake indicators: {result['fake_score']}")
 
-if __name__ == "__main__":
-    main()
+
+main()

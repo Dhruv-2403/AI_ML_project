@@ -1,6 +1,6 @@
 # Fake News Credibility Classifier
 
-AI-driven system to evaluate news article credibility using machine learning.
+SVM Linear Model System to evaluate news article credibility whether it is Fake or Real trained on WELFake dataset .
 
 ## Overview
 
@@ -49,12 +49,12 @@ The model was trained and evaluated on 20,000 articles with the following metric
 ## Project Structure
 
 ```
-├── app.py              # Streamlit web application
-├── model.ipynb         # Model training notebook
-├── requirements.txt    # Python dependencies
-├── svm_model.joblib    # Trained SVM model
-├── tfidf_vectorizer.joblib  # TF-IDF vectorizer
-└── .gitignore         # Git ignore rules
+├── app.py              
+├── model.ipynb        
+├── requirements.txt    
+├── svm_model.joblib    
+├── tfidf_vectorizer.joblib 
+└── .gitignore         
 ```
 
 ## Dataset

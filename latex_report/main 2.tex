@@ -1,0 +1,336 @@
+% IEEE Double-Column Template — Fake News Detection Project
+% Compile: pdflatex → bibtex → pdflatex → pdflatex
+
+\documentclass[conference]{IEEEtran}
+
+\IEEEoverridecommandlockouts
+
+\usepackage[numbers]{natbib}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  captionpos=b
+}
+
+\begin{document}
+
+% ---------- TITLE ----------
+\title{Intelligent News Credibility Analysis Using\\Machine Learning and Natural Language Processing}
+
+\author{
+\IEEEauthorblockN{Ashvin Tiwari, Abhishek Varma, Dhruv Sareen, Krish Amit Modi}
+\IEEEauthorblockA{
+Department of Computer Science\\
+Semester 4 — AI/ML Project\\}
+}
+
+\maketitle
+
+% ---------- ABSTRACT ----------
+\begin{abstract}
+The rapid spread of misinformation across digital platforms presents a significant challenge to public trust and information integrity. This paper presents a machine learning-based system for automatic classification of news articles as real or fake. We use the WELFake dataset comprising 72,134 labelled news articles and extract textual features using Term Frequency-Inverse Document Frequency (TF-IDF) vectorization with bigram support. Four classification models are trained and evaluated: Logistic Regression, Linear Support Vector Machine (SVM), Decision Tree, and Random Forest. The Linear SVM model achieves the best overall performance with an accuracy of 96.55\%, precision of 96.22\%, F1-score of 96.66\%, and ROC-AUC of 96.36\%. The trained model is deployed as an interactive web application using Streamlit, enabling real-time credibility analysis of user-submitted news articles with explainable outputs.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Fake news detection, natural language processing, TF-IDF, support vector machine, text classification, misinformation, Streamlit.
+\end{IEEEkeywords}
+
+% ---------- INTRODUCTION ----------
+\section{Introduction}
+
+The proliferation of digital media has dramatically lowered the barrier to publishing and sharing information. While this democratisation has positive implications, it has also enabled the rapid spread of fabricated or misleading content. Fake news — defined as deliberately false or misleading information presented as legitimate journalism — has been shown to spread six times faster than verified news on social media platforms \cite{vosoughi2018spread}.
+
+The consequences of unchecked misinformation are severe: it can influence election outcomes \cite{allcott2017social}, trigger public panic, incite violence, and erode trust in legitimate institutions. Traditional fact-checking relies on human journalists who manually verify claims — a process that is slow, expensive, and unable to scale to the volume of content produced daily.
+
+Automated fake news detection using machine learning and natural language processing (NLP) offers a scalable solution. By learning the linguistic patterns, writing style, and structural features that distinguish real news from fabricated content, ML models can provide instant credibility assessments.
+
+In this paper, we present a complete end-to-end pipeline for fake news detection. Our contributions are as follows:
+
+\begin{itemize}
+    \item A comprehensive text preprocessing and feature extraction pipeline using TF-IDF with bigram support.
+    \item A comparative evaluation of four classification models on the WELFake dataset.
+    \item Selection of the Linear SVM model with 96.55\% accuracy as the optimal classifier.
+    \item Deployment of the model as a live web application with explainable outputs.
+\end{itemize}
+
+% ---------- RELATED WORK ----------
+\section{Related Work}
+
+Fake news detection has been studied extensively in recent years. Early approaches relied on hand-crafted features such as writing style, punctuation usage, and sentiment \cite{horne2017just}. Horne and Adali showed that fake news articles tend to have shorter titles, use simpler vocabulary, and contain more emotional language compared to real news.
+
+Shu et al. \cite{shu2017fake} proposed a comprehensive framework that considers both content-based and social-context features, including user profiles and propagation patterns. However, social-context features require access to platform-specific data that is often restricted.
+
+Ahmed et al. \cite{ahmed2017detection} demonstrated that TF-IDF features combined with linear classifiers achieve competitive performance on fake news datasets. Their work showed that Linear SVM consistently outperforms more complex models for this task.
+
+In our work, we use the WELFake dataset sourced from Kaggle. We evaluate multiple classification models on this dataset and deploy the best performing model as an accessible web application.
+
+% ---------- METHODOLOGY ----------
+\section{Methodology}
+
+Figure~\ref{fig:pipeline} illustrates the overall architecture of our system.
+
+\begin{figure}[ht]
+\centering
+\fbox{\parbox{0.42\textwidth}{\centering
+\small
+Raw Text $\rightarrow$ Preprocessing $\rightarrow$ TF-IDF Vectorization\\[4pt]
+$\downarrow$\\[4pt]
+Model Training (LR, SVM, DT, RF)\\[4pt]
+$\downarrow$\\[4pt]
+Best Model Selection (Linear SVM)\\[4pt]
+$\downarrow$\\[4pt]
+Streamlit Web Application
+}}
+\caption{System architecture pipeline.}
+\label{fig:pipeline}
+\end{figure}
+
+\subsection{Dataset Description}
+
+We use the WELFake dataset [6], which contains 72,134 news articles with binary labels: 0 (Fake) and 1 (Real). The dataset is composed of articles aggregated from four sources to ensure diversity in topics, writing styles, and domains
+
+\begin{table}[ht]
+\centering
+\caption{Dataset Statistics}
+\begin{tabular}{lc}
+\toprule
+Property & Value \\
+\midrule
+Total articles & 72,134 \\
+Real articles (label = 0) & 35,028 \\
+Fake articles (label = 1) & 37,106 \\
+Features & title, text, label \\
+\bottomrule
+\end{tabular}
+\label{tab:dataset}
+\end{table}
+
+The dataset exhibits a near-balanced class distribution (48.6\% real, 51.4\% fake), which reduces the need for class balancing techniques.
+
+\subsection{Text Preprocessing}
+
+Each article's title and body text are concatenated into a single content field. The following preprocessing steps are applied sequentially:
+
+\begin{enumerate}
+    \item \textbf{Lowercasing}: All text is converted to lowercase to ensure case-insensitive matching.
+    \item \textbf{URL removal}: Hyperlinks matching the pattern \texttt{http\textbackslash S+} or \texttt{www.\textbackslash S+} are stripped.
+    \item \textbf{HTML tag removal}: Any residual HTML tags are removed using the pattern \texttt{<.*?>}.
+    \item \textbf{Punctuation removal}: All punctuation characters are removed using Python's \texttt{string.punctuation} mapping.
+    \item \textbf{Number removal}: Standalone digits are replaced with whitespace.
+    \item \textbf{Whitespace normalisation}: Multiple consecutive spaces are collapsed to a single space.
+\end{enumerate}
+
+\subsection{Feature Extraction}
+
+We use Term Frequency-Inverse Document Frequency (TF-IDF) vectorization to convert preprocessed text into numerical feature vectors.
+
+\begin{table}[ht]
+\centering
+\caption{TF-IDF Vectorizer Configuration}
+\begin{tabular}{lc}
+\toprule
+Parameter & Value \\
+\midrule
+\texttt{max\_features} & 10,000 \\
+\texttt{ngram\_range} & (1, 2) \\
+\texttt{min\_df} & 3 \\
+\texttt{max\_df} & 0.95 \\
+\texttt{sublinear\_tf} & True \\
+\texttt{stop\_words} & English \\
+\bottomrule
+\end{tabular}
+\label{tab:tfidf}
+\end{table}
+
+\subsection{Models Used}
+
+We evaluate four classification algorithms:
+
+\begin{enumerate}
+    \item \textbf{Logistic Regression (LR)}: A linear model with saga solver, $C = 1.5$, and maximum 1,500 iterations.
+    
+    \item \textbf{Linear SVM}: A support vector machine using \texttt{LinearSVC} with $C = 1.0$ and 2,000 maximum iterations, wrapped in \texttt{CalibratedClassifierCV} (3-fold) to enable probability estimation.
+    
+    \item \textbf{Decision Tree (DT)}: A tree classifier with maximum depth of 50, minimum samples split of 5, and minimum samples per leaf of 3.
+    
+    \item \textbf{Random Forest (RF)}: An ensemble of 300 decision trees with maximum depth of 80 and minimum samples split of 4.
+\end{enumerate}
+
+\subsection{Training and Validation}
+
+The dataset is split into 80\% training and 20\% test using stratified sampling to preserve class balance. Models are evaluated using the following metrics:
+
+\begin{itemize}
+    \item \textbf{Accuracy}: $\frac{TP + TN}{TP + TN + FP + FN}$
+    \item \textbf{Precision}: $\frac{TP}{TP + FP}$
+    \item \textbf{Recall}: $\frac{TP}{TP + FN}$
+    \item \textbf{F1-Score}: $2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$
+\end{itemize}
+
+Additionally, 5-fold cross-validation is performed on the training set to assess generalisation.
+
+% ---------- RESULTS ----------
+\section{Results}
+
+\subsection{Model Comparison}
+
+Table~\ref{tab:results} presents the performance of all four models on the test set.
+
+\begin{table}[ht]
+\centering
+\caption{Model Performance Comparison on Test Set}
+\begin{tabular}{lccccc}
+\toprule
+Model & Acc & Prec & Rec & F1 & AUC \\
+\midrule
+Logistic Regression & 0.9572 & 0.9554 & 0.9615 & 0.9584 & 0.9572 \\
+\textbf{Linear SVM} & \textbf{0.9655} & \textbf{0.9622} & \textbf{0.9712} & \textbf{0.9666} & \textbf{0.9636} \\
+Decision Tree & 0.9148 & 0.9082 & 0.9264 & 0.9172 & 0.9145 \\
+Random Forest & 0.9553 & 0.9471 & 0.9670 & 0.9569 & 0.9550 \\
+\bottomrule
+\end{tabular}
+\label{tab:results}
+\end{table}
+
+The Linear SVM achieves the highest score across all five metrics.
+
+\subsection{Cross-Validation}
+
+Five-fold cross-validation on the training set yields a mean F1-score of $0.965 \pm 0.002$ for the Linear SVM, confirming that the model generalises well and is not overfitting.
+
+\subsection{Feature Analysis}
+
+Analysis of the SVM coefficient weights reveals the most discriminative features:
+
+\begin{table}[ht]
+\centering
+\caption{Top Features by SVM Coefficient Weight}
+\begin{tabular}{lc|lc}
+\toprule
+\multicolumn{2}{c|}{\textbf{Real Indicators}} & \multicolumn{2}{c}{\textbf{Fake Indicators}} \\
+Feature & Weight & Feature & Weight \\
+\midrule
+reuters & $-2.84$ & said trump & $+1.92$ \\
+said & $-1.76$ & image via & $+1.68$ \\
+washington & $-1.51$ & video shows & $+1.55$ \\
+told reporters & $-1.43$ & breaking & $+1.41$ \\
+according to & $-1.38$ & share & $+1.33$ \\
+\bottomrule
+\end{tabular}
+\label{tab:features}
+\end{table}
+
+Real news articles tend to contain attribution phrases (``said'', ``according to'', ``told reporters'') and references to established sources (``reuters'', ``washington''). Fake articles tend to use sensationalist language and content-sharing cues.
+
+% ---------- DISCUSSION ----------
+\section{Discussion}
+
+The strong performance of the Linear SVM can be attributed to its effectiveness in high-dimensional sparse feature spaces, which is precisely the structure of TF-IDF representations. The SVM's decision boundary is defined by a small subset of support vectors, making it robust to noise in the large vocabulary.
+
+Our system additionally incorporates a rule-based legitimacy check as a post-processing layer. This module detects strong legitimacy signals (e.g., references to Reuters, AP) and sensationalist patterns (e.g., excessive exclamation marks, words like ``shocking'') to adjust borderline predictions. This hybrid approach improves practical reliability.
+
+\subsection{Limitations}
+
+\begin{itemize}
+    \item The model is trained on English-language articles only and may not generalise to other languages.
+    \item TF-IDF features capture word-level patterns but may miss semantic meaning and context that transformer-based models like BERT could capture.
+    \item The WELFake dataset, while large, is static and may not reflect emerging misinformation patterns.
+    \item The rule-based legitimacy module uses handcrafted patterns that require manual maintenance.
+\end{itemize}
+
+% ---------- CONCLUSION ----------
+\section{Conclusion}
+
+We presented an end-to-end system for automatic fake news detection using machine learning and NLP. Our pipeline processes raw news articles through text cleaning, TF-IDF feature extraction, and classification. Among four evaluated models, the Linear SVM achieved the best performance with 96.55\% accuracy and 96.66\% F1-score.
+
+The model is deployed as a live Streamlit web application that provides instant credibility verdicts with explainable outputs including confidence scores and feature-level explanations.
+
+Future work for Milestone 2 includes extending the system into an agentic misinformation monitoring framework that autonomously monitors live news feeds, cross-references claims against trusted sources, and tracks the temporal propagation of misinformation narratives.
+
+% ---------- REFERENCES ----------
+\begin{thebibliography}{9}
+
+\bibitem{vosoughi2018spread}
+S. Vosoughi, D. Roy, and S. Aral, ``The spread of true and false news online,'' \textit{Science}, vol. 359, no. 6380, pp. 1146--1151, 2018.
+
+\bibitem{allcott2017social}
+H. Allcott and M. Gentzkow, ``Social media and fake news in the 2016 election,'' \textit{Journal of Economic Perspectives}, vol. 31, no. 2, pp. 211--236, 2017.
+
+\bibitem{horne2017just}
+B. Horne and S. Adali, ``This just in: Fake news packs a lot in title, uses simpler, repetitive content in text body, more similar to satire than real news,'' in \textit{Proc. AAAI ICWSM}, 2017.
+
+\bibitem{shu2017fake}
+K. Shu, A. Sliva, S. Wang, J. Tang, and H. Liu, ``Fake news detection on social media: A data mining perspective,'' \textit{ACM SIGKDD Explorations Newsletter}, vol. 19, no. 1, pp. 22--36, 2017.
+
+\bibitem{ahmed2017detection}
+H. Ahmed, I. Traore, and S. Saad, ``Detection of online fake news using N-gram analysis and machine learning techniques,'' in \textit{Proc. ISDDC}, Springer, 2017, pp. 127--138.
+
+\bibitem{verma2021welfake}
+P. K. Verma, P. Agrawal, I. Amorim, and R. Prodan, ``WELFake: Word embedding over linguistic features for fake news detection,'' \textit{IEEE Transactions on Computational Social Systems}, vol. 8, no. 4, pp. 881--893, 2021.
+
+\bibitem{sklearn}
+Scikit-learn Developers, ``scikit-learn: Machine Learning in Python — User Guide,'' 2024. [Online]. Available: \url{https://scikit-learn.org/stable/user_guide.html}
+
+\bibitem{streamlit}
+Streamlit Inc., ``Streamlit API Reference,'' 2024. [Online]. Available: \url{https://docs.streamlit.io/}
+
+\bibitem{pandas}
+The Pandas Development Team, ``pandas: Python Data Analysis Library — Documentation,'' 2024. [Online]. Available: \url{https://pandas.pydata.org/docs/}
+
+\bibitem{numpy}
+NumPy Developers, ``NumPy Documentation,'' 2024. [Online]. Available: \url{https://numpy.org/doc/}
+
+\bibitem{joblib}
+Joblib Developers, ``Joblib: Running Python functions as pipeline jobs,'' 2024. [Online]. Available: \url{https://joblib.readthedocs.io/}
+
+\end{thebibliography}
+
+% ---------- APPENDIX ----------
+\appendix
+
+\section{GitHub Repository}
+
+The complete source code, trained models, and deployment configuration are available at:
+
+\begin{center}
+\textbf{\url{https://github.com/ashvin2005/AI_ML_project}}
+\end{center}
+
+\subsection{Repository Structure}
+
+\begin{lstlisting}
+AI_ML_project/
+  app.py               # Streamlit web application
+  model.ipynb          # Model training notebook
+  WELFake_Dataset.csv  # Training dataset
+  svm_model.joblib     # Trained SVM model
+  tfidf_vectorizer.joblib  # Fitted TF-IDF vectorizer
+  requirements.txt     # Python dependencies
+  README.md            # Project documentation
+  main 2.tex           # This LaTeX report
+\end{lstlisting}
+
+\subsection{Key Components}
+
+\begin{itemize}
+    \item \textbf{model.ipynb}: Jupyter Notebook containing data exploration, preprocessing, feature extraction, training of all four models, evaluation, and model export.
+    \item \textbf{app.py}: Streamlit application that loads the saved model and vectorizer, accepts user input, runs the prediction pipeline, and displays results with credibility scores and explanations.
+    \item \textbf{svm\_model.joblib}: Serialised Linear SVM model wrapped in \texttt{CalibratedClassifierCV}.
+    \item \textbf{tfidf\_vectorizer.joblib}: Fitted TF-IDF vectorizer with 10,000 features.
+    \item \textbf{requirements.txt}: Lists all Python dependencies including \texttt{streamlit}, \texttt{scikit-learn}, \texttt{joblib}, \texttt{pandas}, and \texttt{numpy}.
+\end{itemize}
+
+\end{document}

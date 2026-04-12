@@ -68,7 +68,7 @@ pip install streamlit
 ### 3. Run the Application
 
 ```bash
-streamlit run app.py
+streamlit run milestone1/app.py
 ```
 
 Open browser at:

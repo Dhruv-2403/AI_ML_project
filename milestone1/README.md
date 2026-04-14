@@ -82,11 +82,14 @@ http://localhost:8501
 ## Project Structure
 
 ```
-├── app.py
-├── model.ipynb
+├── milestone1/
+│   ├── app.py
+│   ├── model.ipynb
+│   ├── svm_model.joblib
+│   └── tfidf_vectorizer.joblib
+├── milestone2/
+│   └── agent/
 ├── requirements.txt
-├── svm_model.joblib
-├── tfidf_vectorizer.joblib
 └── .gitignore
 ```
 

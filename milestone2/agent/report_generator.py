@@ -54,8 +54,6 @@ class CredibilityReportPDF(FPDF):
         self.set_text_color(*rgb)
         for item in items:
             self.cell(8, 6, chr(149))
-            # chr(149) is the bullet; we move to LMARGIN after so multi_cell
-            # gets the full page width on the next call
             self.multi_cell(0, 6, _safe(str(item)), new_x="LMARGIN", new_y="NEXT")
         self.set_text_color(0, 0, 0)
         self.ln(2)

@@ -20,7 +20,7 @@ class AgentState(TypedDict):
     error: str
 
 
-# lazy singletons so models load only when first needed
+
 _predictor: Optional[CredibilityPredictor] = None
 _retriever: Optional[FactCheckRetriever] = None
 _reasoner: Optional[CredibilityReasoner] = None
@@ -47,7 +47,7 @@ def _get_reasoner():
     return _reasoner
 
 
-# ── Node functions ─────────────────────────────────────────────────────────
+
 
 def predict_node(state: AgentState) -> AgentState:
     try:
@@ -59,14 +59,14 @@ def predict_node(state: AgentState) -> AgentState:
 
 
 def retrieve_node(state: AgentState) -> AgentState:
-    # skip if a hard error happened upstream
+
     if state.get("error"):
         return state
     try:
         result = _get_retriever().retrieve(state["article_text"])
         return {**state, "retrieval": result}
     except Exception as e:
-        # retrieval failure is non-fatal; analysis continues with no sources
+
         logger.warning(f"retrieve_node failed (continuing): {e}")
         return {**state, "retrieval": {"keywords_used": "", "sources": [], "method": "none"}}
 
@@ -102,7 +102,7 @@ def report_node(state: AgentState) -> AgentState:
         return {**state, "pdf_report": None}
 
 
-# ── Build the graph ────────────────────────────────────────────────────────
+
 
 def build_agent():
     g = StateGraph(AgentState)
@@ -123,8 +123,6 @@ def build_agent():
 
     return g.compile()
 
-
-# compiled graph — import this and call .invoke()
 credibility_agent = build_agent()
 
 

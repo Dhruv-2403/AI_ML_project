@@ -8,8 +8,8 @@ from datetime import datetime
 from milestone2.agent import run_agent
 
 st.set_page_config(
-    page_title="AI Credibility Assistant",
-    page_icon="🛡️",
+    page_title="News Credibility Checker",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -186,18 +186,17 @@ st.markdown("""
 # sidebar 
 
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3246/3246231.png", width=100)
-    st.title("AI Assistant")
-    st.markdown("Unified Credibility Platform")
+    st.title("News Credibility Checker")
+    st.markdown("Milestone 2 - Agentic AI System")
     
     st.divider()
-    groq_api_key = st.text_input("Groq API Key", type="password", help="Enable the Reasoning Engine (console.groq.com)")
+    groq_api_key = st.text_input("Groq API Key", type="password", help="Get a free key at console.groq.com")
     if groq_api_key:
         os.environ["GROQ_API_KEY"] = groq_api_key
     
     st.divider()
-    st.markdown("### 📊 Project Monitoring")
-    st.metric("Total Assessments", st.session_state.stats["Total"])
+    st.markdown("### Session Stats")
+    st.metric("Total Analyzed", st.session_state.stats["Total"])
     
     c1, c2 = st.columns(2)
     with c1:
@@ -213,9 +212,9 @@ with st.sidebar:
         st.rerun()
 
 
-st.title("AI News Credibility Assistant")
+st.title("News Credibility Analysis")
 
-st.markdown("### Integrated Intelligence Platform | Real-Time Misinformation Monitoring")
+st.markdown("Analyze news articles using machine learning and AI-assisted fact checking.")
 
 #  Analysis Trends(charts)
 if st.session_state.history:
@@ -236,9 +235,9 @@ with st.container():
     
     btn_col1, btn_col2 = st.columns(2)
     with btn_col1:
-        launch_btn = st.button("🚀 Run AI Analysis", type="primary", use_container_width=True)
+        launch_btn = st.button("Run Analysis", type="primary", use_container_width=True)
     with btn_col2:
-        if st.button("🧹 Clear Screen", use_container_width=True):
+        if st.button("Clear", use_container_width=True):
             st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
     
@@ -250,10 +249,10 @@ if launch_btn:
         st.warning("Groq API Key required for deep reasoning. Enter it in the sidebar.")
     else:
         try:
-            with st.status("🕵️ AI Assistant executing workflow...", expanded=True) as status:
-                st.write("Stage 1: Machine Learning Classifier (SVM Signal)")
-                st.write("Stage 2: RAG Verification (Live Source Retrieval)")
-                st.write("Stage 3: Agentic Reasoning (Cognitive Synthesis)")
+            with st.status("Running analysis...", expanded=True) as status:
+                st.write("Step 1: Running SVM classifier...")
+                st.write("Step 2: Retrieving fact-check sources...")
+                st.write("Step 3: Generating AI reasoning report...")
                 
                 result = run_agent(article_text)
                 
@@ -285,18 +284,18 @@ if launch_btn:
            
             cols = st.columns(3)
             with cols[0]:
-                st.markdown("#### 🤖 Base ML Signal")
+                st.markdown("#### ML Classifier")
                 pred = result["prediction"]
                 st.metric("SVM Prediction", pred.get("label"))
                 st.metric("Base Confidence", f"{pred.get('confidence')}%")
                 st.progress(pred.get("confidence", 0) / 100)
             
             with cols[1]:
-                st.markdown("#### 🌐 Evidence Context")
+                st.markdown("#### Retrieved Sources")
                 retrieval = result["retrieval"]
                 st.metric("Retrieved Sources", len(retrieval.get("sources", [])))
                 st.metric("Source Consensus", "HIGH" if len(retrieval.get("sources", [])) > 2 else "LOW")
-                with st.expander("View Source Evidence"):
+                with st.expander("View Sources"):
                     for s in retrieval.get("sources", []):
                         st.markdown(f"""
                             <div class="source-card">
@@ -353,10 +352,10 @@ if launch_btn:
 
 else:
     if not st.session_state.history:
-        st.info("Welcome! This integrated AI Assistant uses a 3-stage validation process to assess news credibility.")
+        st.info("Paste a news article or social media post above and click Run Analysis to get a credibility assessment.")
         st.markdown("""
-        ### Our Process:
-        1. **Classification**: Uses a trained SVM model (96.55% accuracy) on the WELFake dataset.
-        2. **Retrieval**: Performs real-time search across global fact-checking repositories.
-        3. **Reasoning**: An autonomous agent (Groq/Llama 3) synthesizes all signals into a structured report.
+        **How it works:**
+        1. **Classification** - A trained SVM model predicts whether the article is real or fake.
+        2. **Source Retrieval** - The system searches fact-checking sites like Snopes, AP, and PolitiFact.
+        3. **AI Reasoning** - A Groq LLaMA 3 model reviews the ML result and retrieved sources to produce a structured report.
         """)

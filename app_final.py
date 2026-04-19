@@ -18,6 +18,8 @@ if 'history' not in st.session_state:
     st.session_state.history = []
 if 'stats' not in st.session_state:
     st.session_state.stats = {"Real": 0, "Fake": 0, "Uncertain": 0, "Total": 0}
+if 'article_input' not in st.session_state:
+    st.session_state.article_input = ""
 
 
 st.markdown("""
@@ -233,7 +235,8 @@ with st.container():
         "",
         placeholder="Paste article body or social media post content here...",
         height=200,
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        key="article_input"
     )
     
     btn_col1, btn_col2 = st.columns(2)
@@ -241,6 +244,7 @@ with st.container():
         launch_btn = st.button("Run Analysis", type="primary", use_container_width=True)
     with btn_col2:
         if st.button("Clear", use_container_width=True):
+            st.session_state.article_input = ""
             st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
     

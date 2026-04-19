@@ -1,4 +1,4 @@
-# 🛡️ AI News Credibility Assistant
+# AI News Credibility Assistant
 
 ### *Integrated Intelligence Platform | Real-Time Misinformation Monitoring*
 
@@ -11,46 +11,34 @@ A comprehensive hybrid classification system designed to evaluate the credibilit
 
 ---
 
-## 📖 Table of Contents
-- [Project Overview](#-project-overview)
-- [The 3-Stage Validation Engine](#-the-3-stage-validation-engine)
-- [System Architecture](#-system-architecture)
-- [Key Features](#-key-features)
-- [Performance Metrics](#-performance-metrics)
-- [Tech Stack](#-tech-stack)
-- [Project Setup](#-project-setup)
-- [Project Structure](#-project-structure)
-- [Ethical Disclaimer](#-ethical-disclaimer)
 
----
-
-## 🛡️ Project Overview
+## Project Overview
 This project evolved from a standalone machine learning classifier into a full-scale **Agentic Intelligence Platform**. By combining traditional linguistic analysis with real-time web verification and LLM-based reasoning, it provides a deep, multi-dimensional assessment of news credibility.
 
 ---
 
-## ⚙️ The 3-Stage Validation Engine
+## The 3-Stage Validation Engine
 
 Our system processes news through three rigorous layers of validation:
 
-### 1️⃣ Stage 1: Machine Learning Signal (SVM)
+### Stage 1: Machine Learning Signal (SVM)
 The core engine uses a **Linear Support Vector Machine (SVM)** trained on the **WELFake dataset** (72,000+ articles). It analyzes:
 - **Linguistic Fingerprints**: Passive vs. active voice, sensationalism, and punctuation patterns.
 - **Statistical Patterns**: TF-IDF vectorization with unigram and bigram analysis (10,000 max features).
 
-### 2️⃣ Stage 2: RAG Verification (Live Evidence)
+### Stage 2: RAG Verification (Live Evidence)
 The system performs real-time searches across global fact-checking repositories to find corroborating or conflicting evidence.
 - **Dynamic Scraping**: Fetches the latest updates from Snopes, AP, PolitiFact, and Reuters.
 - **Consensus Analysis**: Evaluates whether retrieved sources support or debunk the input claim.
 
-### 3️⃣ Stage 3: Agentic Reasoning (Cognitive Synthesis)
+### Stage 3: Agentic Reasoning (Cognitive Synthesis)
 Powered by **LangGraph** and **Groq (Llama 3.1)**, an autonomous agent synthesizes the ML signal and live evidence.
 - **Conflict Resolution**: Resolves discrepancies between linguistic patterns (ML) and actual facts (RAG).
 - **Consolidated Verdict**: Generates a professional rationale with confidence scoring.
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 graph TD
@@ -69,7 +57,7 @@ graph TD
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - **Parallel Agentic Workflow**: Built with LangGraph to process ML and evidence streams concurrently, reducing latency.
 - **Live RAG Integration**: Real-time scraper and vector-based retrieval for fresh fact-checks.
@@ -79,7 +67,7 @@ graph TD
 
 ---
 
-## 📈 Performance Metrics
+## Performance Metrics
 
 | Metric | Milestone 1 (20k Sample) | Milestone 2 (Full Optimization) |
 | :--- | :--- | :--- |
@@ -90,7 +78,7 @@ graph TD
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Category | Technology |
 | :--- | :--- |
@@ -103,7 +91,7 @@ graph TD
 
 ---
 
-## ⚙️ Project Setup Guide
+## Project Setup Guide
 
 ### 1. Prerequisites
 - Python 3.9 or higher
@@ -114,12 +102,9 @@ graph TD
 # Clone the repository
 git clone https://github.com/ashvin2005/AI_ML_project.git
 cd AI_ML_project
+ 
 
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 
-# Install dependencies
 pip install -r requirements.txt
 ```
 
@@ -133,7 +118,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 ├── milestone1/
@@ -152,5 +137,4 @@ pip install -r requirements.txt
 
 ---
 
-## ⚖️ Ethical Disclaimer
-This tool is powered by AI and should be used as a supplementary resource for verifying information. It provides a probability-based assessment and should be cross-referenced with multiple trusted sources for critical decision-making. We do not guarantee 100% accuracy in real-time misinformation detection.
+

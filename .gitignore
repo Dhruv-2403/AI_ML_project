@@ -23,6 +23,7 @@ wheels/
 .env
 .env.example
 .venv
+.streamlit/secrets.toml
 env/
 venv/
 ENV/

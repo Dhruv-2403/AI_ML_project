@@ -20,9 +20,10 @@ def preprocess_text(text):
     text = " ".join(text.split())
     return text
 
-MODEL_PATH = "svm_model.joblib"
-VECTORIZER_PATH = "tfidf_vectorizer.joblib"
-DATASET_PATH = "WELFake_Dataset.csv"
+_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(_DIR, "svm_model.joblib")
+VECTORIZER_PATH = os.path.join(_DIR, "tfidf_vectorizer.joblib")
+DATASET_PATH = os.path.join(_DIR, "..", "WELFake_Dataset.csv")
 
 @st.cache_resource(show_spinner="Loading model...")
 def find_model():
@@ -103,8 +104,6 @@ def predict(text, model, vectorizer):
     
     strong_legit, legit_score, fake_score = check_legitimacy(text)
     
-    # WELFake label encoding: 0=FAKE, 1=REAL
-    # CalibratedClassifierCV returns proba in classes_ order → [P(FAKE), P(REAL)]
     proba_fake = proba[0]
     proba_real = proba[1]
     

@@ -21,6 +21,9 @@ if 'stats' not in st.session_state:
 if 'article_input' not in st.session_state:
     st.session_state.article_input = ""
 
+def clear_input():
+    st.session_state.article_input = ""
+
 
 st.markdown("""
     <style>
@@ -243,9 +246,7 @@ with st.container():
     with btn_col1:
         launch_btn = st.button("Run Analysis", type="primary", use_container_width=True)
     with btn_col2:
-        if st.button("Clear", use_container_width=True):
-            st.session_state.article_input = ""
-            st.rerun()
+        st.button("Clear", use_container_width=True, on_click=clear_input)
     st.markdown('</div>', unsafe_allow_html=True)
     
 
